@@ -1,0 +1,64 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  abn           String?
+  gstRegistered Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  // Relations
+  projects Project[]
+  expenses Expense[]
+}
+
+model Project {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientName   String
+  title        String
+  totalAmount  Decimal
+  paymentTerms String
+  createdAt    DateTime @default(now())
+
+  // Relations
+  milestones Milestone[]
+  expenses   Expense[]
+}
+
+model Milestone {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  description String
+  amount      Decimal
+  dueDate     DateTime
+  status      String   @default("pending") @map(overrides: { map: "status", type: "String", enums: ["pending", "paid", "overdue"] })
+  paidAt      DateTime?
+
+  @@map("milestones")
+}
+
+model Expense {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId  String?
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  vendor     String
+  amount     Decimal
+  date       DateTime
+  category   String
+  receiptUrl String?
+  createdAt  DateTime @default(now())
+}

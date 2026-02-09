@@ -1,0 +1,6 @@
+# supabase/config.toml
+[functions.projects]
+verify_jwt = true
+
+[functions.dashboard]
+verify_jwt = true
